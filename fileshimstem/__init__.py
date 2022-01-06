@@ -1,12 +1,25 @@
-#!/usr/bin/env python3
+""" fileshimstem - a terrible way to expose a filesystem over the network
+
+    still better than using SMB for my macbook, I guess.
+
+"""
+
+
+__version__ = "0.1.0"
+
+
 
 import json
+from json.decoder import JSONDecodeError
 
 import os
+import sys
 
-from pathlib import PosixPath, WindowsPath
+from pathlib import Path#, WindowsPath
 
-import uvicorn
+from typing import Union
+from starlette.responses import RedirectResponse
+
 from fastapi import FastAPI, Response, HTTPException
 from fastapi.responses import FileResponse
 from git import Repo
@@ -15,26 +28,35 @@ from git import Repo
 app = FastAPI()
 
 if os.name == "posix":
-    pathtype = PosixPath
     PATHPREFIX = "/"
 elif os.name == "nt":
-    pathtype = WindowsPath
     PATHPREFIX = ""
 else:
     sys.exit("Couldn't work out what kind of path to use")
 
-with open("config.json", encoding="utf8") as fh:
-    config = json.load(fh)
 
-@app.get("/")
-async def root():
-    return {"message" : "Hello world"}
+def load_config(oldconfig: dict = Union[None,dict]) -> dict:
+    """ loads the config"""
+    for filepath in [
+        "~/.config/fileshimstem.json",
+        "./fileshimstem.json",
+    ]:
+        if os.path.exists(os.path.expanduser(filepath)):
+            with open(os.path.expanduser(filepath), encoding="utf8") as config_file:
+                try:
+                    config = json.load(config_file)
+                    return config
+                except JSONDecodeError as json_error:
+                    print(f"Failed to load config: {json_error}")
+                    return oldconfig
+    return oldconfig
 
-def check_path_allowed(fullpath):
+CONFIG = load_config()
+
+def check_path_allowed(fullpath: os.PathLike) -> bool:
     """ checks if it's valid, returns True if it is, and guess what if not"""
-    for path in config.get("goodpaths"):
-        print(path, fullpath)
-        if str(fullpath).startswith(path):
+    for path in CONFIG.get("goodpaths"):
+        if str(fullpath.resolve()).startswith(path):
             return True
     return False
 
@@ -46,10 +68,16 @@ def build_headers(headers, stat):
     headers["type"] = "dir"
 
 
+@app.get("/")
+async def root():
+    """ redirects root to docs """
+    return RedirectResponse("/docs")
+
+
 @app.head('/{subpath:path}')
 async def head_show_subpath(subpath, response: Response):
     """ head method """
-    fullpath = pathtype(f"{PATHPREFIX}{subpath.lstrip('/')}")
+    fullpath = Path(f"{PATHPREFIX}{subpath.lstrip('/')}")
 
     if not check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
@@ -60,7 +88,7 @@ async def head_show_subpath(subpath, response: Response):
         stat = fullpath.stat()
         build_headers(response.headers, stat)
         response.headers["type"] = "dir"
-    elif fullpath.is_file:
+    elif fullpath.is_file():
         stat = fullpath.stat()
         build_headers(response.headers, stat)
         response.headers["type"] = "file"
@@ -70,37 +98,34 @@ async def head_show_subpath(subpath, response: Response):
 @app.get('/{subpath:path}') #
 async def get_show_subpath(subpath, response: Response):
     """ get method """
-    fullpath = pathtype(f"{PATHPREFIX}{subpath.lstrip('/')}")
+    fullpath = Path(f"{PATHPREFIX}{subpath.lstrip('/')}")
 
     if not check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
-        raise HTTPException(status_code=404, detail={"message": "Item not found"})
-
+        raise FileNotFoundError
 
     if fullpath.is_dir():
         response.headers["type"] = "dir"
-        return "This is a directory"
-    if fullpath.is_file:
+        return {
+            "files" : os.listdir(fullpath.resolve())
+        }
+    if fullpath.is_file():
         stat = fullpath.stat()
         build_headers(response.headers, stat)
         response.headers["type"] = "file"
         return FileResponse(fullpath)
-    else:
-        return FileNotFoundError
+    return FileNotFoundError
 
 @app.options("/update")
-async def update():
-    """ does a git pull to update the code """
-
-    # rorepo is a Repo instance pointing to the git-python repository.
-    # For all you know, the first argument to Repo is a path to the repository
-    # you want to work with
+async def update(config=CONFIG):
+    """ does a git pull to update the code, which makes uvicorn do the thing """
     repo = Repo(".")
     print("Running update")
+    config = load_config()
     pull = repo.remotes.origin.pull()[0]
-    result = {
-    }
+    result = { "config" : dict(config) }
+
     for field in ("ref", "flags", "note", "old_commit"):
         if hasattr(pull, field):
             result[field] = getattr(pull, field)
@@ -109,13 +134,3 @@ async def update():
         "message" : "done!",
         "result" : result,
     }
-
-
-if __name__ == "__main__":
-    uvicorn.run(
-        "fileshimstem:app",
-        host=config.get("host", "127.0.0.1"),
-        port=config.get("port", 8000),
-        log_level="debug",
-        reload=True,
-    )
