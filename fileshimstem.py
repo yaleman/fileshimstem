@@ -44,7 +44,7 @@ def show_subpath(subpath):
 
     if fullpath.is_file:
         if request.method == "HEAD":
-            app.logger.debug("HEAD")
+            print("HEAD")
             stat = fullpath.stat()
             data = {
                 "type" : "file",
@@ -54,7 +54,7 @@ def show_subpath(subpath):
                     data[attr.lstrip("st_")] = getattr(stat, attr)
             return json.dumps(data, default=str, indent=4)
         elif request.method == "GET":
-            app.logger.debug("GET")
+            print("GET")
             return send_file(fullpath)
     abort(500)
 
