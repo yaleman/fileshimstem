@@ -29,6 +29,7 @@ def show_subpath(subpath):
     # show the subpath after /path/
     fullpath = pathtype(f"{PATHPREFIX}{subpath}")
     app.logger.info(fullpath)
+    print(fullpath)
 
     if not fullpath.exists():
         return 404
