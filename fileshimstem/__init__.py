@@ -53,9 +53,12 @@ def load_config(oldconfig: dict = Union[None,dict]) -> dict:
 
 CONFIG = load_config()
 
-def check_path_allowed(fullpath: os.PathLike) -> bool:
+def check_path_allowed(fullpath: os.PathLike, config=CONFIG) -> bool:
     """ checks if it's valid, returns True if it is, and guess what if not"""
-    for path in CONFIG.get("goodpaths"):
+    if not config.get("goodpaths"):
+        print("Can't possibly work, no goodpaths set")
+        return False
+    for path in config.get("goodpaths"):
         if str(fullpath.resolve()).startswith(path):
             print(fullpath.resolve(), path)
             return True
