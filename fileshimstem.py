@@ -4,10 +4,10 @@ import json
 
 import os
 
-from pathlib import Path, PosixPath, WindowsPath
+from pathlib import PosixPath, WindowsPath
 
-from flask import Flask, abort
-from markupsafe import escape
+from flask import Flask, abort, request
+# from markupsafe import escape
 
 
 app = Flask(__name__)
@@ -24,7 +24,7 @@ else:
 with open("config.json", encoding="utf8") as fh:
     config = json.load(fh)
 
-@app.route('/<path:subpath>')
+@app.route('/<path:subpath>', methods=["GET", "HEAD"])
 def show_subpath(subpath):
     # show the subpath after /path/
     fullpath = pathtype(f"{PATHPREFIX}{subpath}")
@@ -43,15 +43,17 @@ def show_subpath(subpath):
 
 
     if fullpath.is_file:
-        # return json.dumps(, default=str)
-        stat = fullpath.stat()
-        data = {
-            "type" : "file",
-        }
-        for attr in dir(stat):
-            if attr.startswith("st_"):
-                data[attr.lstrip("st_")] = getattr(stat, attr)
-        return json.dumps(data, default=str, indent=4)
-
+        if request.method == "HEAD":
+            stat = fullpath.stat()
+            data = {
+                "type" : "file",
+            }
+            for attr in dir(stat):
+                if attr.startswith("st_"):
+                    data[attr.lstrip("st_")] = getattr(stat, attr)
+            return json.dumps(data, default=str, indent=4)
+        elif request.method == "GET":
+            return fullpath.read_bytes()
+    abort(500)
 
 app.run()
