@@ -59,8 +59,8 @@ def check_path_allowed(fullpath: os.PathLike, config=CONFIG) -> bool:
         print("Can't possibly work, no goodpaths set", file=sys.stderr)
         return False
     for path in config.get("goodpaths"):
+        print(fullpath.resolve(), path, file=sys.stderr)
         if str(fullpath.resolve()).startswith(path):
-            print(fullpath.resolve(), path, file=sys.stderr)
             return True
     return False
 
