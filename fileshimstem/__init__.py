@@ -57,6 +57,7 @@ def check_path_allowed(fullpath: os.PathLike) -> bool:
     """ checks if it's valid, returns True if it is, and guess what if not"""
     for path in CONFIG.get("goodpaths"):
         if str(fullpath.resolve()).startswith(path):
+            print(fullpath.resolve(), path)
             return True
     return False
 
