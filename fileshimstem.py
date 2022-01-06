@@ -50,11 +50,19 @@ def show_subpath(subpath):
                 if attr.startswith("st_"):
                     response.headers[attr.lstrip("st_")] = getattr(stat, attr)
 
-            response.headers["File-Type"] = "file"
+            response.headers["type"] = "file"
             return response
 
         elif request.method == "GET":
             return send_file(fullpath)
+    elif fullpath.is_dir() and request.method == "HEAD":
+        stat = fullpath.stat()
+        response = Response("")
+        for attr in dir(stat):
+            if attr.startswith("st_"):
+                response.headers[attr.lstrip("st_")] = getattr(stat, attr)
+        response.headers["type"] = "dir"
+
     abort(500)
 
 app.run(host=config.get("host", "127.0.0.1"), port=config.get("port", 5000))
