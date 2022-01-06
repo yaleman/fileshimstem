@@ -6,7 +6,7 @@ import uvicorn
 
 from . import load_config
 
-def runthings():
+def run():
     """ just does the thing """
 
     config = load_config()
@@ -19,4 +19,4 @@ def runthings():
     )
 
 if __name__ == "__main__":
-    runthings()
+    run()
