@@ -102,8 +102,8 @@ async def update():
     result = {
     }
     for field in ("ref", "flags", "note", "old_commit"):
-        if hasattr(result, field):
-            result[field] = getattr(result, field)
+        if hasattr(pull, field):
+            result[field] = getattr(pull, field)
 
     return {
         "message" : "done!",
