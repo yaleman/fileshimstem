@@ -28,6 +28,7 @@ with open("config.json", encoding="utf8") as fh:
 def show_subpath(subpath):
     # show the subpath after /path/
     fullpath = pathtype(f"{PATHPREFIX}{subpath}")
+    app.logger.info(fullpath)
 
     if not fullpath.exists():
         return 404
