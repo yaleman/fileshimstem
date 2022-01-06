@@ -6,7 +6,7 @@ import os
 
 from pathlib import PosixPath, WindowsPath
 
-from flask import Flask, abort, request, send_file
+from flask import Flask, abort, request, send_file, Response
 # from markupsafe import escape
 
 
@@ -44,17 +44,16 @@ def show_subpath(subpath):
 
     if fullpath.is_file:
         if request.method == "HEAD":
-            print("HEAD")
             stat = fullpath.stat()
-            data = {
-                "type" : "file",
-            }
+            response = Response("")
             for attr in dir(stat):
                 if attr.startswith("st_"):
-                    data[attr.lstrip("st_")] = getattr(stat, attr)
-            return json.dumps(data, default=str, indent=4)
+                    response.headers[attr.lstrip("st_")] = getattr(stat, attr)
+
+            response.headers["File-Type"] = "file"
+            return response
+
         elif request.method == "GET":
-            print("GET")
             return send_file(fullpath)
     abort(500)
 
