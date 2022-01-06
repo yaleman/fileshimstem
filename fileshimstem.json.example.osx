@@ -1,5 +1,6 @@
 {
 	"goodpaths" : [
-	"/Users/yaleman/Downloads/"
-]
+		"/Users/yaleman/Downloads/"
+	],
+	"port" : 8000
 }
