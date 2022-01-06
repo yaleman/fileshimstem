@@ -58,10 +58,9 @@ def check_path_allowed(fullpath: os.PathLike, config=CONFIG) -> bool:
     if not config.get("goodpaths"):
         print("Can't possibly work, no goodpaths set", file=sys.stderr)
         return False
-
     fullpath_path = fullpath.resolve()
     for path in config.get("goodpaths"):
-        print(fullpath_path, path, file=sys.stderr)
+        # print(fullpath_path, path, file=sys.stderr)
         if str(fullpath_path).startswith(path):
             return True
     return False
@@ -72,7 +71,6 @@ def build_headers(headers, stat):
         if attr.startswith("st_"):
             headers[attr.lstrip("st_")] = str(getattr(stat, attr))
     headers["type"] = "dir"
-
 
 @app.get("/")
 async def root():
