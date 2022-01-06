@@ -76,11 +76,12 @@ async def get_show_subpath(subpath, response: Response):
         raise HTTPException(status_code=404, detail={"message": "Item not found"})
 
 
-
+    if fullpath.is_dir():
+        response.headers["type"] = "dir"
+        return "This is a directory"
     if fullpath.is_file:
         stat = fullpath.stat()
         build_headers(response.headers, stat)
-
         response.headers["type"] = "file"
         return FileResponse(fullpath)
     else:
