@@ -6,7 +6,7 @@ import os
 
 from pathlib import PosixPath, WindowsPath
 
-from flask import Flask, abort, request
+from flask import Flask, abort, request, send_file
 # from markupsafe import escape
 
 
@@ -53,7 +53,7 @@ def show_subpath(subpath):
                     data[attr.lstrip("st_")] = getattr(stat, attr)
             return json.dumps(data, default=str, indent=4)
         elif request.method == "GET":
-            return fullpath.read_bytes()
+            return send_file(fullpath)
     abort(500)
 
-app.run()
+app.run(host=config.get("host", "127.0.0.1"), port=config.get("port", 5000))
