@@ -103,7 +103,7 @@ async def head_show_subpath(subpath, response: Response):
 async def get_show_subpath(subpath, response: Response):
     """ get method """
     fullpath = Path(f"{PATHPREFIX}{subpath.lstrip('/')}")
-
+    print(fullpath)
     if not check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
