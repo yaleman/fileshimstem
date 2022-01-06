@@ -9,6 +9,8 @@ from pathlib import PosixPath, WindowsPath
 import uvicorn
 from fastapi import FastAPI, Response, HTTPException
 from fastapi.responses import FileResponse
+from git import Repo
+
 
 app = FastAPI()
 
@@ -87,6 +89,27 @@ async def get_show_subpath(subpath, response: Response):
     else:
         return FileNotFoundError
 
+@app.options("/update")
+async def update():
+    """ does a git pull to update the code """
+
+    # rorepo is a Repo instance pointing to the git-python repository.
+    # For all you know, the first argument to Repo is a path to the repository
+    # you want to work with
+    repo = Repo(".")
+    print("Running update")
+    pull = repo.remotes.origin.pull()[0]
+    result = {
+    }
+    for field in ("ref", "flags", "note", "old_commit"):
+        if hasattr(result, field):
+            result[field] = getattr(result, field)
+
+    return {
+        "message" : "done!",
+        "result" : result,
+    }
+
 
 if __name__ == "__main__":
     uvicorn.run(
@@ -94,4 +117,5 @@ if __name__ == "__main__":
         host=config.get("host", "127.0.0.1"),
         port=config.get("port", 8000),
         log_level="debug",
+        reload=True,
     )
