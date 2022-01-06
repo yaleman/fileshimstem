@@ -56,11 +56,11 @@ CONFIG = load_config()
 def check_path_allowed(fullpath: os.PathLike, config=CONFIG) -> bool:
     """ checks if it's valid, returns True if it is, and guess what if not"""
     if not config.get("goodpaths"):
-        print("Can't possibly work, no goodpaths set")
+        print("Can't possibly work, no goodpaths set", file=sys.stderr)
         return False
     for path in config.get("goodpaths"):
         if str(fullpath.resolve()).startswith(path):
-            print(fullpath.resolve(), path)
+            print(fullpath.resolve(), path, file=sys.stderr)
             return True
     return False
 
@@ -132,7 +132,7 @@ async def update(config=CONFIG):
 
     for field in ("ref", "flags", "note", "old_commit"):
         if hasattr(pull, field):
-            result[field] = getattr(pull, field)
+            result[field] = str(getattr(pull, field))
 
     return {
         "message" : "done!",
