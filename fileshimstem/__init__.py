@@ -103,10 +103,16 @@ async def root():
 
 import urllib.parse
 
+def parse_path(path: str):
+    """ unfucks urlencoded paths """
+    unquoted = urllib.parse.unquote_plus(f"{app.pathprefix}{path.lstrip('/')}")
+    with_pluses = unquoted.replace("&#43;", "+")
+    return Path(with_pluses)
+
 @app.head('/{subpath:path}')
 async def head_show_subpath(subpath, response: Response):
     """ head method """
-    fullpath = Path(urllib.parse.unquote_plus(f"{app.pathprefix}{subpath.lstrip('/')}"))
+    fullpath = parse_path(subpath)
 
     if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
@@ -128,7 +134,7 @@ async def head_show_subpath(subpath, response: Response):
 @app.get('/{subpath:path}') #
 async def get_show_subpath(subpath, response: Response):
     """ get method """
-    fullpath = Path(urllib.parse.unquote_plus(f"{app.pathprefix}{subpath.lstrip('/')}"))
+    fullpath = parse_path(subpath)
     # print(fullpath, file=sys.stderr)
     if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
