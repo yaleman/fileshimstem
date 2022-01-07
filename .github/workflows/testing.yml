@@ -29,6 +29,6 @@ jobs:
             python3 -m pip install --upgrade flit pytest pylint
             FLIT_ROOT_INSTALL=1 python3 -m flit install --deps all
             python3 -m pylint --rcfile=.pylintrc fileshimstem
-            PATH=$PATH:$(which git) python3 -m pytest
+            GIT_PYTHON_REFRESH=quiet python3 -m pytest
 
 
