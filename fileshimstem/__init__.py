@@ -30,7 +30,6 @@ from git import Repo # type: ignore
 class FileShimStem(FastAPI):
     """ A silly shim between my filesystem and HTTP """
 
-
     def __init__(self, config: Optional[dict] = None):
         """ overloaded init """
         super().__init__()
@@ -65,7 +64,7 @@ class FileShimStem(FastAPI):
                         config = json.load(config_file_handle)
                         self.config = config
                     except JSONDecodeError as json_error:
-                        print(f"Failed to load config: {json_error}")
+                        print(f"Failed to load config: {json_error}", file=sys.stderr)
         return config
 
     def check_path_allowed(self, fullpath: Path) -> bool:
@@ -127,7 +126,7 @@ async def head_show_subpath(subpath, response: Response):
 async def get_show_subpath(subpath, response: Response):
     """ get method """
     fullpath = Path(f"{app.pathprefix}{subpath.lstrip('/')}")
-    print(fullpath, file=sys.stderr)
+    # print(fullpath, file=sys.stderr)
     if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
