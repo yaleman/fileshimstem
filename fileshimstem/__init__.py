@@ -37,6 +37,7 @@ class FileShimStem(FastAPI):
 
         if not config:
             self.config = {}
+            self.load_config()
         else:
             self.config = config
 
@@ -61,10 +62,11 @@ class FileShimStem(FastAPI):
             if os.path.exists(os.path.expanduser(filepath)):
                 with open(os.path.expanduser(filepath), encoding="utf8") as config_file_handle:
                     try:
-                        self.config = json.load(config_file_handle)
+                        config = json.load(config_file_handle)
+                        self.config = config
                     except JSONDecodeError as json_error:
                         print(f"Failed to load config: {json_error}")
-        return self.config
+        return config
 
     def check_path_allowed(self, fullpath: Path) -> bool:
         """ checks if it's valid, returns True if it is, and guess what if not"""
