@@ -118,7 +118,6 @@ async def head_show_subpath(subpath, response: Response):
         stat = fullpath.stat()
         build_headers(response.headers, stat)
         response.headers["type"] = "file"
-        response.headers["Content-Length"] = str(stat.st_size)
     return ""
     # raise HTTPException(status_code=500, detail={"message": "I can't even"})
 
