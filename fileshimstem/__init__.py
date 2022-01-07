@@ -109,7 +109,8 @@ async def head_show_subpath(subpath, response: Response):
     if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
-        raise HTTPException(status_code=404, detail={"message": "Item not found"})
+        print(f"File not found: {fullpath}", file=sys.stderr)
+        raise FileNotFoundError
 
     if fullpath.is_dir():
         stat = fullpath.stat()
@@ -128,8 +129,10 @@ async def get_show_subpath(subpath, response: Response):
     fullpath = Path(f"{app.pathprefix}{subpath.lstrip('/')}")
     # print(fullpath, file=sys.stderr)
     if not app.check_path_allowed(fullpath):
+
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
+        print(f"File not found: {fullpath}", file=sys.stderr)
         raise FileNotFoundError
 
     if fullpath.is_dir():
