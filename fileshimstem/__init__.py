@@ -101,11 +101,12 @@ async def root():
     """ redirects root to docs """
     return RedirectResponse("/docs")
 
+import urllib.parse
 
 @app.head('/{subpath:path}')
 async def head_show_subpath(subpath, response: Response):
     """ head method """
-    fullpath = Path(f"{app.pathprefix}{subpath.lstrip('/')}")
+    fullpath = Path(urllib.parse.unquote_plus(f"{app.pathprefix}{subpath.lstrip('/')}"))
 
     if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
@@ -127,7 +128,7 @@ async def head_show_subpath(subpath, response: Response):
 @app.get('/{subpath:path}') #
 async def get_show_subpath(subpath, response: Response):
     """ get method """
-    fullpath = Path(f"{app.pathprefix}{subpath.lstrip('/')}")
+    fullpath = Path(urllib.parse.unquote_plus(f"{app.pathprefix}{subpath.lstrip('/')}"))
     # print(fullpath, file=sys.stderr)
     if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
