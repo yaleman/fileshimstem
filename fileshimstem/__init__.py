@@ -22,6 +22,7 @@ from starlette.responses import RedirectResponse
 
 from fastapi import FastAPI, Response, HTTPException
 from fastapi.responses import FileResponse
+
 from git import Repo # type: ignore
 
 
@@ -110,7 +111,7 @@ async def head_show_subpath(subpath, response: Response):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
         print(f"File not found: {fullpath}", file=sys.stderr)
-        raise FileNotFoundError
+        raise HTTPException(status_code=404, detail={"message": f"File not found: {fullpath}"})
 
     if fullpath.is_dir():
         stat = fullpath.stat()
@@ -129,11 +130,10 @@ async def get_show_subpath(subpath, response: Response):
     fullpath = Path(f"{app.pathprefix}{subpath.lstrip('/')}")
     # print(fullpath, file=sys.stderr)
     if not app.check_path_allowed(fullpath):
-
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
         print(f"File not found: {fullpath}", file=sys.stderr)
-        raise FileNotFoundError
+        raise HTTPException(status_code=404, detail={"message": f"File not found: {fullpath}"})
 
     if fullpath.is_dir():
         response.headers["type"] = "dir"
@@ -145,8 +145,7 @@ async def get_show_subpath(subpath, response: Response):
         build_headers(response.headers, stat)
         response.headers["type"] = "file"
         return FileResponse(fullpath)
-    return FileNotFoundError
-
+    raise HTTPException(status_code=403, detail={"message": f"File type not supported: {fullpath}"})
 @app.options("/update")
 async def update():
     """ does a git pull to update the code, which makes uvicorn do the thing """
