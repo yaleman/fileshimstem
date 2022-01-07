@@ -73,12 +73,12 @@ class FileShimStem(FastAPI):
             return False
         fullpath_path = fullpath.resolve()
         for path in self.config.get("goodpaths", []):
-            print(json.dumps({
-                "function" : "check_path_allowed",
-                "test_case" : fullpath_path,
-                "test_conf" : path,
-                }, indent=4, default=str
-                ), file=sys.stderr)
+            # print(json.dumps({
+            #     "function" : "check_path_allowed",
+            #     "test_case" : fullpath_path,
+            #     "test_conf" : path,
+            #     }, indent=4, default=str
+            #     ), file=sys.stderr)
             if str(fullpath_path).startswith(path):
                 return True
         return False
