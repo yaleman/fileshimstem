@@ -28,11 +28,12 @@ from git import Repo # type: ignore
 
 
 class FileShimStem(FastAPI):
+    """ A silly shim between my filesystem and HTTP """
 
 
     def __init__(self, config: Optional[dict] = None):
         """ overloaded init """
-        super(FileShimStem, self).__init__()
+        super().__init__()
 
         if not config:
             self.config = {}
@@ -144,7 +145,7 @@ async def get_show_subpath(subpath, response: Response):
     return FileNotFoundError
 
 @app.options("/update")
-async def update(config=app.config):
+async def update():
     """ does a git pull to update the code, which makes uvicorn do the thing """
     repo = Repo(".")
     print("Running update")
