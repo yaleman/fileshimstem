@@ -25,9 +25,10 @@ jobs:
         with:
           args: |
             apt-get -y install git
+
             python3 -m pip install --upgrade flit pytest pylint
             FLIT_ROOT_INSTALL=1 python3 -m flit install --deps all
             python3 -m pylint --rcfile=.pylintrc fileshimstem
-            python3 -m pytest
+            PATH=$PATH:$(which git) python3 -m pytest
 
 
