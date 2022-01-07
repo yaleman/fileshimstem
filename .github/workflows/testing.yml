@@ -24,9 +24,9 @@ jobs:
         uses: fylein/python-pylint-github-action@v4
         with:
           args: |
-            python3 -m pip install --upgrade flit
+            python3 -m pip install --upgrade flit pytest pylint
             FLIT_ROOT_INSTALL=1 python3 -m flit install --deps all
             python3 -m pylint --rcfile=.pylintrc fileshimstem
-      - name: pytest
-        run: python3 -m pytest
+            python3 -m pytest
+
 
