@@ -2,14 +2,15 @@
 
 """ just runs the cli """
 
-import uvicorn
+import uvicorn # type: ignore
 
-from . import load_config
+from fileshimstem import app
 
 def run():
     """ just does the thing """
 
-    config = load_config()
+    config = app.load_config()
+
     uvicorn.run(
         "fileshimstem:app",
         host=config.get("host", "127.0.0.1"),

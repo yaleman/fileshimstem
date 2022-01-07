@@ -17,53 +17,74 @@ import sys
 
 from pathlib import Path#, WindowsPath
 
-from typing import Union
+from typing import Optional, Union, List
 from starlette.responses import RedirectResponse
 
 from fastapi import FastAPI, Response, HTTPException
 from fastapi.responses import FileResponse
-from git import Repo
+from git import Repo # type: ignore
 
 
-app = FastAPI()
-
-if os.name == "posix":
-    PATHPREFIX = "/"
-elif os.name == "nt":
-    PATHPREFIX = ""
-else:
-    sys.exit("Couldn't work out what kind of path to use")
 
 
-def load_config(oldconfig: dict = Union[None,dict]) -> dict:
-    """ loads the config"""
-    for filepath in [
-        "~/.config/fileshimstem.json",
-        "./fileshimstem.json",
-    ]:
-        if os.path.exists(os.path.expanduser(filepath)):
-            with open(os.path.expanduser(filepath), encoding="utf8") as config_file:
-                try:
-                    config = json.load(config_file)
-                    return config
-                except JSONDecodeError as json_error:
-                    print(f"Failed to load config: {json_error}")
-                    return oldconfig
-    return oldconfig
+class FileShimStem(FastAPI):
 
-CONFIG = load_config()
 
-def check_path_allowed(fullpath: os.PathLike, config=CONFIG) -> bool:
-    """ checks if it's valid, returns True if it is, and guess what if not"""
-    if not config.get("goodpaths"):
-        print("Can't possibly work, no goodpaths set", file=sys.stderr)
+    def __init__(self, config: Optional[dict] = None):
+        """ overloaded init """
+        super(FileShimStem, self).__init__()
+
+        if not config:
+            self.config = {}
+        else:
+            self.config = config
+
+
+        if os.name == "posix":
+            self.pathprefix = "/"
+        elif os.name == "nt":
+            self.pathprefix = ""
+        else:
+            sys.exit("Couldn't work out what kind of path to use")
+
+    def load_config(self, config_file: Optional[List[str]]=None) -> Union[None,dict]:
+        """ loads the config"""
+        if config_file:
+            configpaths = config_file
+        else:
+            configpaths = [
+                "~/.config/fileshimstem.json",
+                "./fileshimstem.json",
+            ]
+        for filepath in configpaths:
+            if os.path.exists(os.path.expanduser(filepath)):
+                with open(os.path.expanduser(filepath), encoding="utf8") as config_file_handle:
+                    try:
+                        self.config = json.load(config_file_handle)
+                    except JSONDecodeError as json_error:
+                        print(f"Failed to load config: {json_error}")
+        return self.config
+
+    def check_path_allowed(self, fullpath: Path) -> bool:
+        """ checks if it's valid, returns True if it is, and guess what if not"""
+        if not self.config.get("goodpaths"):
+            print("Can't possibly work, no goodpaths set", file=sys.stderr)
+            return False
+        fullpath_path = fullpath.resolve()
+        for path in self.config.get("goodpaths", []):
+            print(json.dumps({
+                "function" : "check_path_allowed",
+                "test_case" : fullpath_path,
+                "test_conf" : path,
+                }, indent=4, default=str
+                ), file=sys.stderr)
+            if str(fullpath_path).startswith(path):
+                return True
         return False
-    fullpath_path = fullpath.resolve()
-    for path in config.get("goodpaths"):
-        # print(fullpath_path, path, file=sys.stderr)
-        if str(fullpath_path).startswith(path):
-            return True
-    return False
+app = FileShimStem()
+
+
+
 
 def build_headers(headers, stat):
     """ updates the headers """
@@ -81,9 +102,9 @@ async def root():
 @app.head('/{subpath:path}')
 async def head_show_subpath(subpath, response: Response):
     """ head method """
-    fullpath = Path(f"{PATHPREFIX}{subpath.lstrip('/')}")
+    fullpath = Path(f"{app.pathprefix}{subpath.lstrip('/')}")
 
-    if not check_path_allowed(fullpath):
+    if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
         raise HTTPException(status_code=404, detail={"message": "Item not found"})
@@ -96,15 +117,16 @@ async def head_show_subpath(subpath, response: Response):
         stat = fullpath.stat()
         build_headers(response.headers, stat)
         response.headers["type"] = "file"
+        response.headers["Content-Length"] = str(stat.st_size)
     return ""
     # raise HTTPException(status_code=500, detail={"message": "I can't even"})
 
 @app.get('/{subpath:path}') #
 async def get_show_subpath(subpath, response: Response):
     """ get method """
-    fullpath = Path(f"{PATHPREFIX}{subpath.lstrip('/')}")
+    fullpath = Path(f"{app.pathprefix}{subpath.lstrip('/')}")
     print(fullpath, file=sys.stderr)
-    if not check_path_allowed(fullpath):
+    if not app.check_path_allowed(fullpath):
         raise HTTPException(status_code=403, detail={"message": "Item not allowed"})
     if not fullpath.exists():
         raise FileNotFoundError
@@ -122,11 +144,11 @@ async def get_show_subpath(subpath, response: Response):
     return FileNotFoundError
 
 @app.options("/update")
-async def update(config=CONFIG):
+async def update(config=app.config):
     """ does a git pull to update the code, which makes uvicorn do the thing """
     repo = Repo(".")
     print("Running update")
-    config = load_config()
+    config = app.load_config()
     pull = repo.remotes.origin.pull()[0]
     result = { "config" : dict(config) }
 
