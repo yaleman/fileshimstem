@@ -1,28 +1,17 @@
-
+""" testing fileshimstem """
 import tempfile
 import json
 from pathlib import Path
-import pytest
+# import pytest
 
-from fastapi import FastAPI
+# from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import fileshimstem
 
 
-# @pytest.fixture(scope="module")
-# def app():
-#     """ app fixture for testing """
-#     return fileshimstem.app
-
-
-@pytest.fixture(scope="module")
-def bad_dir():
-    """ bad dir to grab"""
-    return tempfile.TemporaryDirectory(prefix="fss_banned")
-
 def test_read_main():
-
+    """ tests the basic home page, does it load etc """
     client = TestClient(fileshimstem.app)
     response = client.get("/")
     if not response.status_code == 200:
@@ -30,13 +19,15 @@ def test_read_main():
     assert response.status_code == 200
     assert "FastAPI - Swagger UI" in response.text
 
-def test_read_banned(bad_dir):
-    client = TestClient(fileshimstem.app)
-    response = client.get(bad_dir.name)
+def test_read_banned():
+    """ tests if it raises a 403 on accessing a banned dir """
+    with tempfile.TemporaryDirectory(prefix="fss_banned") as bad_dir:
+        client = TestClient(fileshimstem.app)
+        response = client.get(bad_dir.name)
 
-    if not response.status_code == 403:
-        print(f"CONTENT: {response.content}")
-    assert response.status_code == 403
+        if not response.status_code == 403:
+            print(f"CONTENT: {response.content}")
+        assert response.status_code == 403
 
 def test_read_ok():
     """ tests an ok dir """

@@ -11,17 +11,15 @@ __version__ = "0.1.0"
 
 import json
 from json.decoder import JSONDecodeError
-
 import os
-import sys
-
 from pathlib import Path#, WindowsPath
-
+import sys
 from typing import Optional, Union, List
-from starlette.responses import RedirectResponse
+import urllib.parse
 
 from fastapi import FastAPI, Response, HTTPException
 from fastapi.responses import FileResponse
+from starlette.responses import RedirectResponse
 
 from git import Repo # type: ignore
 
@@ -64,9 +62,10 @@ class FileShimStem(FastAPI):
                     try:
                         config = json.load(config_file_handle)
                         self.config = config
+                        return config
                     except JSONDecodeError as json_error:
                         print(f"Failed to load config: {json_error}", file=sys.stderr)
-        return config
+        return None
 
     def check_path_allowed(self, fullpath: Path) -> bool:
         """ checks if it's valid, returns True if it is, and guess what if not"""
@@ -101,7 +100,6 @@ async def root():
     """ redirects root to docs """
     return RedirectResponse("/docs")
 
-import urllib.parse
 
 def parse_path(path: str):
     """ unfucks urlencoded paths """
