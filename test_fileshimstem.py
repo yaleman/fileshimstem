@@ -23,7 +23,7 @@ def test_read_banned():
     """ tests if it raises a 403 on accessing a banned dir """
     with tempfile.TemporaryDirectory(prefix="fss_banned") as bad_dir:
         client = TestClient(fileshimstem.app)
-        response = client.get(bad_dir.name)
+        response = client.get(bad_dir)
 
         if not response.status_code == 403:
             print(f"CONTENT: {response.content}")
