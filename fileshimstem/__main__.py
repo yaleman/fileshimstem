@@ -6,15 +6,18 @@ import uvicorn # type: ignore
 
 from fileshimstem import app
 
-def run():
+def run() -> None:
     """ just does the thing """
 
     config = app.load_config()
 
+    if config is None:
+        return
+
     uvicorn.run(
         "fileshimstem:app",
-        host=config.get("host", "127.0.0.1"),
-        port=config.get("port", 8000),
+        host=config.host,
+        port=config.port,
         log_level="debug",
         reload=True,
     )
