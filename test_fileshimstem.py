@@ -35,10 +35,10 @@ def test_read_ok():
 
     with tempfile.TemporaryDirectory(prefix="fss_ok") as ok_tempdir:
         tempdir_string = str(Path(ok_tempdir).resolve())
-        app.config["goodpaths"] = [
+        app.config.goodpaths = [
             tempdir_string
         ]
-        print(json.dumps(app.config.get('goodpaths')))
+        print(json.dumps(app.config.goodpaths))
         testdir = f"{tempdir_string}/"
         print(f"Pulling from {testdir}")
         response = client.get(testdir)
