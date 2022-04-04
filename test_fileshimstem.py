@@ -22,7 +22,9 @@ def test_read_main():
 def test_read_banned():
     """ tests if it raises a 403 on accessing a banned dir """
     with tempfile.TemporaryDirectory(prefix="fss_banned") as bad_dir:
-        client = TestClient(fileshimstem.app)
+        app = fileshimstem.app
+        app.config = fileshimstem.ConfigFile(goodpaths = [])
+        client = TestClient(app)
         response = client.get(bad_dir)
         if not response.status_code == 403:
             print(f"CONTENT: {response.content}")
@@ -31,13 +33,12 @@ def test_read_banned():
 def test_read_ok():
     """ tests an ok dir """
     app = fileshimstem.app
+
     client = TestClient(app)
 
     with tempfile.TemporaryDirectory(prefix="fss_ok") as ok_tempdir:
         tempdir_string = str(Path(ok_tempdir).resolve())
-        app.config.goodpaths = [
-            tempdir_string
-        ]
+        app.config = fileshimstem.ConfigFile(goodpaths = [tempdir_string])
         print(json.dumps(app.config.goodpaths))
         testdir = f"{tempdir_string}/"
         print(f"Pulling from {testdir}")
