@@ -21,4 +21,4 @@ jobs:
         run: |
             python -m pip install --quiet --no-cache-dir --upgrade poetry
             poetry install
-            poetry run pylint $(basename $(pwd) | sed -E 's/-/_/') tess
+            poetry run pylint $(basename $(pwd) | sed -E 's/-/_/') tests
