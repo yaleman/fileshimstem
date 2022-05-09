@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 import fileshimstem
 
 
-def test_read_main():
+def test_read_main() -> None:
     """ tests the basic home page, does it load etc """
     client = TestClient(fileshimstem.app)
     response = client.get("/")
@@ -19,7 +19,7 @@ def test_read_main():
     assert response.status_code == 200
     assert "FastAPI - Swagger UI" in response.text
 
-def test_read_banned():
+def test_read_banned() -> None:
     """ tests if it raises a 403 on accessing a banned dir """
     with tempfile.TemporaryDirectory(prefix="fss_banned") as bad_dir:
         app = fileshimstem.app
@@ -30,7 +30,7 @@ def test_read_banned():
             print(f"CONTENT: {response.content}")
         assert response.status_code == 403
 
-def test_read_ok():
+def test_read_ok() -> None:
     """ tests an ok dir """
     app = fileshimstem.app
 
