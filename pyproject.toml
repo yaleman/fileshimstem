@@ -20,7 +20,7 @@ uvicorn = {extras = ["standard"], version = "^0.18.2"}
 GitPython = "^3.1.27"
 
 [tool.poetry.dev-dependencies]
-pylint = "^2.14.4"
+pylint = "^2.14.5"
 pytest = "^7.1.2"
 black = "^22.6.0"
 mypy = "^0.961"
