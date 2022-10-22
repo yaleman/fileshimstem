@@ -2,7 +2,7 @@
 
 """ just runs the cli """
 
-import uvicorn # type: ignore
+import uvicorn
 
 from fileshimstem import app
 
