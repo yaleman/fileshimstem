@@ -15,7 +15,8 @@ def test_read_main() -> None:
     client = TestClient(fileshimstem.app)
     response = client.get("/")
     if not response.status_code == 200:
-        print(f"CONTENT: {response.content}")
+        print("CONTENT: ")
+        print(response.content)
     assert response.status_code == 200
     assert "FastAPI - Swagger UI" in response.text
 
@@ -27,7 +28,8 @@ def test_read_banned() -> None:
         client = TestClient(app)
         response = client.get(bad_dir)
         if not response.status_code == 403:
-            print(f"CONTENT: {response.content}")
+            print("CONTENT:")
+            print(response.content)
         assert response.status_code == 403
 
 def test_read_ok() -> None:
@@ -43,5 +45,6 @@ def test_read_ok() -> None:
         testdir = f"{tempdir_string}/"
         print(f"Pulling from {testdir}")
         response = client.get(testdir)
-        print(f"response content: {response.content}")
+        print("response content:")
+        print(response.content)
         assert response.status_code == 200
