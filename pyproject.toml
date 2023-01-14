@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "fileshimstem"
-version = "0.1.5"
+version = "0.1.6"
 description = "A shim between the filesystem and ... the internet. Probably a bad idea."
 authors = ["James Hodgkinson <james@terminaloutcomes.com>"]
 license = "MIT"
