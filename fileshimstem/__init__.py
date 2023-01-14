@@ -98,7 +98,7 @@ def build_headers(headers: MutableHeaders, stat: os.stat_result) -> None:
             headers[attr.lstrip("st_")] = str(getattr(stat, attr))
     headers["type"] = "dir"
 
-@app.get("/")
+@app.get("/", response_model=None)
 async def root() -> RedirectResponse:
     """ redirects root to docs """
     return RedirectResponse("/docs")
@@ -110,7 +110,7 @@ def parse_path(path: str) -> Path:
     with_pluses = unquoted.replace("&#43;", "+")
     return Path(with_pluses)
 
-@app.head('/{subpath:path}')
+@app.head('/{subpath:path}', response_model=None)
 async def head_show_subpath(
     subpath: str,
     response: Response,
@@ -135,11 +135,15 @@ async def head_show_subpath(
     return Response("")
     # raise HTTPException(status_code=500, detail={"message": "I can't even"})
 
-@app.get('/{subpath:path}') #
+class FileList(BaseModel):
+    """ list of files """
+    files: List[str]
+
+@app.get('/{subpath:path}', response_model=None) #
 async def get_show_subpath(
     subpath: str,
     response: Response,
-    ) -> Union[Dict[str, List[str]], FileResponse]:
+    ) -> Union[FileList, FileResponse]:
     """ get method """
     fullpath = parse_path(subpath)
     # print(fullpath, file=sys.stderr)
@@ -151,9 +155,7 @@ async def get_show_subpath(
 
     if fullpath.is_dir():
         response.headers["type"] = "dir"
-        return {
-            "files" : os.listdir(fullpath.resolve())
-        }
+        return FileList(files=os.listdir(fullpath.resolve()))
     if fullpath.is_file():
         stat = fullpath.stat()
         build_headers(response.headers, stat)
@@ -161,8 +163,13 @@ async def get_show_subpath(
         return FileResponse(fullpath)
     raise HTTPException(status_code=403, detail={"message": f"File type not supported: {fullpath}"})
 
+class UpdateResponse(BaseModel):
+    """ update response """
+    message: str
+    result: Dict[str, Any]
+
 @app.options("/update")
-async def update() -> Dict[str, Any]:
+async def update() -> UpdateResponse:
     """ does a git pull to update the code, which makes uvicorn do the thing """
     repo = Repo(".")
     print("Running update")
@@ -175,7 +182,4 @@ async def update() -> Dict[str, Any]:
         if hasattr(pull, field):
             result[field] = getattr(pull, field)
 
-    return {
-        "message" : "done!",
-        "result" : result,
-    }
+    return UpdateResponse(message="done!", result=result)
