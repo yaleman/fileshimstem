@@ -15,7 +15,7 @@ keywords = [
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "^0.112.0"
+fastapi = "^0.113.0"
 uvicorn = {extras = ["standard"], version = "^0.30"}
 GitPython = "^3.1.29"
 
