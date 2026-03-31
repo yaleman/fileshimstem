@@ -1,4 +1,4 @@
-name: ruff
+name: pylint
 
 "on":
   push:
@@ -7,7 +7,7 @@ name: ruff
   pull_request:
 
 jobs:
-  ruff:
+  pylint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.10'
-      - name: Running ruff
+      - name: Running pylint
         run: |
           python --version
           python -m pip install --quiet --no-cache-dir --upgrade uv
