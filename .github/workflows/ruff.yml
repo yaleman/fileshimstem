@@ -1,4 +1,4 @@
-name: mypy
+name: ruff
 
 "on":
   push:
@@ -7,7 +7,7 @@ name: mypy
   pull_request:
 
 jobs:
-  mypy:
+  ruff:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -17,9 +17,9 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.10'
-      - name: Running mypy
+      - name: Running ruff
         run: |
           python --version
           python -m pip install --quiet --no-cache-dir --upgrade uv
           uv sync --group dev --frozen
-          uv run mypy --strict fileshimstem tests
+          uv run ruff check fileshimstem tests

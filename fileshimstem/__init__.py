@@ -19,7 +19,7 @@ from pydantic import BaseModel
 from starlette.datastructures import MutableHeaders
 from starlette.responses import RedirectResponse
 
-from git import Repo # type: ignore
+from git import Repo
 
 
 class ConfigFile(BaseModel):
@@ -63,7 +63,8 @@ class FileShimStem(FastAPI):
             config_path = Path(filepath).expanduser().resolve()
             if config_path.exists():
                 try:
-                    config = ConfigFile.parse_file(config_path)
+                    config_data = json.loads(config_path.read_text())
+                    config = ConfigFile.model_validate(config_data)
                     self.config = config
                     return config
                 except JSONDecodeError as json_error:
