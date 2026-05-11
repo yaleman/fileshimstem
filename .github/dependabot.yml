@@ -3,7 +3,6 @@ updates:
   - package-ecosystem: pip
     directory: /
     schedule:
-      group: "pip"
       interval: weekly
       day: saturday
       time: "02:00"
@@ -11,7 +10,6 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      group: "gha"
       interval: weekly
       day: saturday
       time: "02:00"
