@@ -20,7 +20,7 @@ fileshimstem = "fileshimstem.__main__:run"
 dev = [
     "pytest>=9.0.3", #stopping toml rollup
     "ruff>=0.15.12",
-    "ty>=0.0.26",
+    "ty>=0.0.35",
     "httpx>=0.28.0",
 ]
 [build-system]
