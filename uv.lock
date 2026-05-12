@@ -102,7 +102,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastapi", specifier = ">=0.115.0" },
+    { name = "fastapi", specifier = ">=0.136.1" },
     { name = "gitpython", specifier = ">=3.1.50" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.46.0" },
 ]
